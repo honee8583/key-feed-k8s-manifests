@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-service
+  template:
+    metadata:
+      labels:
+        app: identity-service
+    spec:
+      containers:
+      - name: identity-service
+        image: honee8583/identity-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+        
+        # [헬스체크] K3s가 파드 상태를 확인하는 방법
+        #readinessProbe:
+        # httpGet:
+        #   path: /actuator/health
+        #   port: 8081
+        # initialDelaySeconds: 40
+        # periodSeconds: 30
+        
+        env:
+        # 1. 프로파일 설정
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        
+        # 2. ConfigMap에서 공통 설정 가져오기 (RDS 주소)
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_PORT
+
+        # 3. DB 접속 URL 조립 (ConfigMap + 개별 DB명)
+        # 중요: DB 이름(key_feed_identity)은 서비스마다 다르게 설정
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://$(DB_HOST):$(DB_PORT)/key_feed_identity?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
+              
+        # 4. Secret에서 민감 정보 가져오기 (계정, 키값)
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SPRING_DATASOURCE_USERNAME
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SPRING_DATASOURCE_PASSWORD
+        - name: JWT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JWT_KEY
+        - name: JASYPT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JASYPT_KEY
+              
+        # 5. 리소스 제한 (t3.medium/large 등 EC2 스펙에 맞춰 조정 필요)
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi" # OOM 방지를 위한 제한
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service # 내부 DNS 이름 (http://identity-service 로 호출됨)
+spec:
+  selector:
+    app: identity-service
+  ports:
+    - protocol: TCP
+      port: 80        # 다른 서비스가 호출할 때 사용하는 포트
+      targetPort: 8081 # 실제 컨테이너 내부 포트

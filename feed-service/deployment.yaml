@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feed-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feed-service
+  template:
+    metadata:
+      labels:
+        app: feed-service
+    spec:
+      containers:
+      - name: feed-service
+        image: honee8583/feed-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8082 # Feed Service는 8082 포트 사용
+        
+        # [헬스체크]
+        #readinessProbe:
+        # httpGet:
+        #   path: /actuator/health
+        #   port: 8082
+        # initialDelaySeconds: 40
+        # periodSeconds: 30
+        
+        env:
+        # 1. 기본 설정
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        
+        # 2. DB 주소 조립 (순서 중요: 재료 먼저 선언)
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_PORT
+              
+        - name: ES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: ES_HOST
+        - name: ES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: ES_PORT
+        
+        # [핵심] feed-service 전용 DB 이름 사용
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://$(DB_HOST):$(DB_PORT)/key_feed_feed?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
+        
+        # 3. DB 계정 정보 (Secret 참조)
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SPRING_DATASOURCE_USERNAME
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SPRING_DATASOURCE_PASSWORD
+
+        - name: SPRING_ELASTICSEARCH_URIS
+          value: "http://$(ES_HOST):$(ES_PORT)"
+              
+        # 5. JWT 및 보안 키
+        - name: JWT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JWT_KEY
+        - name: JASYPT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JASYPT_KEY
+              
+        # 6. 리소스 제한 (메모리 부족 방지)
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: feed-service # 내부 도메인 (http://feed-service)
+spec:
+  selector:
+    app: feed-service
+  ports:
+    - protocol: TCP
+      port: 80        # Gateway가 호출할 포트
+      targetPort: 8082 # 컨테이너 실제 포트
