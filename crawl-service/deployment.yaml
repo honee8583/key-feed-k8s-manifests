@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: crawl-service
-        image: honee8583/crawl-service:763f21a26cd4089778b821226ab5b2cd847f33ad
+        image: honee8583/crawl-service:76b89eb8762a4a8b07e4284595f7f1962aaaa4f5
         imagePullPolicy: Always
         ports:
         - containerPort: 8083
