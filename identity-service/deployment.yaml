@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: identity-service
-        image: honee8583/identity-service:a93fba0be67ce5a0c7ddb869d910afdee548bfe1
+        image: honee8583/identity-service:05783229ec542322d3241356f6ecdbafecd5e699
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
