@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: match-service
-        image: honee8583/match-service:latest
+        image: honee8583/match-service:00204b5ca1fe4f031a8555749d3452f90f5a21a0
         imagePullPolicy: Always
         ports:
         - containerPort: 8084 # Match Service 기본 포트
