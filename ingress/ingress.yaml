@@ -3,10 +3,25 @@ kind: Ingress
 metadata:
   name: key-feed-ingress
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+    # HTTP(web)와 HTTPS(websecure) 진입점을 모두 허용
+    traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+    
+    # 이 라우터에서 TLS(HTTPS)를 사용하겠다고 명시
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    
+    # Cert-Manager에게 "letsencrypt-prod" 발급자를 통해 인증서를 요청
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
 spec:
+  # TLS 설정 블록
+  tls:
+  - hosts:
+    - key-feed.kro.kr
+    secretName: key-feed-tls-secret # 인증서가 저장될 시크릿 이름(자동 생성)
+
   rules:
-  - http:
+  - host: key-feed.kro.kr
+    http:
       paths:
       - path: /api
         pathType: Prefix
