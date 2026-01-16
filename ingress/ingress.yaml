@@ -12,7 +12,7 @@ metadata:
     # Cert-Manager에게 "letsencrypt-prod" 발급자를 통해 인증서를 요청
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 
-    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+    # traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
 
 spec:
   # TLS 설정 블록
