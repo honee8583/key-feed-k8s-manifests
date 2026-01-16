@@ -16,11 +16,11 @@ spec:
   # TLS 설정 블록
   tls:
   - hosts:
-    - key-feed.kro.kr
+    - key-feed.p-e.kr
     secretName: key-feed-tls-secret # 인증서가 저장될 시크릿 이름(자동 생성)
 
   rules:
-  - host: key-feed.kro.kr
+  - host: key-feed.p-e.kr
     http:
       paths:
       - path: /api
