@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: client-service
-        image: honee8583/client-service:0cdd6b5d34a0970c82f05fbdd49b58be559ec63b
+        image: honee8583/client-service:338ed27cc14fb1ee6f698d2165526603a73af2e7
         ports:
         - containerPort: 80
 ---
