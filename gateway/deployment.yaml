@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: gateway-service
-        image: honee8583/gateway:d03ab46afb4606abe8e568ae85b974dd136ee5af
+        image: honee8583/gateway:c654f3483a7e8ed61722ae3574d91b3669afbd16
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
