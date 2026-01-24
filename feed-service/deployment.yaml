@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: feed-service
-        image: honee8583/feed-service:9e9bbfe7f395d286bb5f95570d7aefab686a92e5
+        image: honee8583/feed-service:680aa7ee61d6e93d19e13cbf26c3f834260d6f6c
         imagePullPolicy: Always
         ports:
         - containerPort: 8082 # Feed Service는 8082 포트 사용
